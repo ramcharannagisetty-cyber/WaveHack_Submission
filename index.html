@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PetriAI — Microbial Analysis Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080c10;--bg2:#0d1318;--bg3:#111820;--card:#131c24;
+  --border:#1e2d3a;--border2:#2a3d50;
+  --accent:#00e5a0;--accent2:#00b87a;
+  --accent-dim:rgba(0,229,160,0.1);--accent-glow:rgba(0,229,160,0.2);
+  --blue:#3b9eff;--blue-dim:rgba(59,158,255,0.1);
+  --amber:#ffb347;--amber-dim:rgba(255,179,71,0.1);
+  --red:#ff5555;--red-dim:rgba(255,85,85,0.1);
+  --text:#e8f0f7;--text2:#7a9ab2;--text3:#3d566a;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;
+  --radius:10px;--radius-lg:16px;
+}
+html,body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;scroll-behavior:smooth}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── NAV ── */
+nav{display:flex;align-items:center;justify-content:space-between;padding:16px 40px;border-bottom:1px solid var(--border);background:rgba(8,12,16,0.97);position:sticky;top:0;z-index:200;backdrop-filter:blur(16px)}
+.logo{font-family:var(--display);font-size:21px;font-weight:800;letter-spacing:-0.5px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.logo-mark{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center}
+.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:blink 2.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3;transform:scale(0.6)}}
+.logo-text span{color:var(--accent)}
+.nav-links{display:flex;gap:4px}
+.nav-link{font-family:var(--mono);font-size:12px;color:var(--text2);padding:8px 14px;border-radius:6px;cursor:pointer;transition:all 0.15s;letter-spacing:0.04em;border:1px solid transparent}
+.nav-link:hover{color:var(--text);background:var(--bg3)}
+.nav-link.active{color:var(--accent);background:var(--accent-dim);border-color:rgba(0,229,160,0.2)}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.btn-nav{background:var(--accent);color:#000;font-weight:600;font-size:13px;padding:9px 20px;border-radius:8px;cursor:pointer;border:none;font-family:var(--display);transition:all 0.15s}
+.btn-nav:hover{background:#00ffb3;transform:translateY(-1px)}
+.api-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--text3);padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px}
+.api-dot{width:6px;height:6px;border-radius:50%;background:var(--border2)}
+.api-dot.ok{background:var(--accent);box-shadow:0 0 6px var(--accent-glow)}
+.api-dot.err{background:var(--red)}
+
+/* ── PAGE SECTIONS ── */
+.page{display:none;animation:fadeIn 0.3s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HERO ── */
+.hero{max-width:1160px;margin:0 auto;padding:72px 40px 60px;display:grid;grid-template-columns:1fr 480px;gap:64px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-dim);border:1px solid rgba(0,229,160,0.25);border-radius:100px;padding:5px 16px 5px 8px;margin-bottom:28px}
+.hero-badge-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:blink 2.5s ease-in-out infinite}
+.hero-badge span{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:0.08em}
+h1{font-family:var(--display);font-size:54px;font-weight:800;line-height:1.06;letter-spacing:-2px;margin-bottom:20px}
+h1 em{font-style:normal;color:var(--accent)}
+.hero-sub{font-size:16px;color:var(--text2);line-height:1.75;margin-bottom:36px;max-width:460px;font-weight:300}
+.hero-btns{display:flex;gap:12px;margin-bottom:40px}
+.btn-primary{background:var(--accent);color:#000;padding:13px 28px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;border:none;font-family:var(--display);transition:all 0.15s}
+.btn-primary:hover{background:#00ffb3;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text);padding:13px 28px;border-radius:8px;font-weight:500;font-size:14px;cursor:pointer;border:1px solid var(--border2);font-family:var(--display);transition:all 0.15s}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.hero-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.kpi-val{font-family:var(--display);font-size:28px;font-weight:800;color:var(--accent)}
+.kpi-lbl{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:3px;letter-spacing:0.06em}
+.petri-visual{position:relative;aspect-ratio:1}
+.petri-ring{width:100%;height:100%;border-radius:50%;position:relative;background:radial-gradient(circle at 42% 38%,#163028 0%,#0a1e16 30%,#060e0b 65%,#030807 100%);border:1.5px solid var(--border2);overflow:hidden;box-shadow:0 0 60px rgba(0,229,160,0.06),inset 0 0 40px rgba(0,229,160,0.03)}
+.scan-beam{position:absolute;width:100%;height:3px;background:linear-gradient(90deg,transparent 0%,var(--accent) 50%,transparent 100%);animation:scanBeam 4s linear infinite;opacity:0.4;top:-5px}
+@keyframes scanBeam{0%{top:-5%;opacity:0}8%{opacity:0.4}85%{opacity:0.4}100%{top:105%;opacity:0}}
+.colony-dot{position:absolute;border-radius:50%;background:var(--accent);opacity:0;animation:colonySeed var(--dur,3s) ease-in-out infinite;animation-delay:var(--delay,0s)}
+@keyframes colonySeed{0%{opacity:0;transform:scale(0.4)}20%{opacity:var(--op,0.7)}80%{opacity:var(--op,0.7)}100%{opacity:0;transform:scale(1.1)}}
+.hero-dish-label{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.12em;white-space:nowrap}
+
+/* ── FEATURES STRIP ── */
+.features-strip{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);padding:16px 0;overflow:hidden;position:relative}
+.features-strip::before,.features-strip::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2}
+.features-strip::before{left:0;background:linear-gradient(90deg,var(--bg2),transparent)}
+.features-strip::after{right:0;background:linear-gradient(-90deg,var(--bg2),transparent)}
+.features-track{display:flex;gap:48px;animation:scroll 30s linear infinite;width:max-content;padding:0 24px}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.feature-item{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;color:var(--text2);white-space:nowrap}
+.feature-item span{color:var(--accent)}
+
+/* ── SECTION WRAPPER ── */
+.section-wrap{max-width:1160px;margin:0 auto;padding:64px 40px}
+.section-eyebrow{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:0.16em;margin-bottom:10px}
+h2{font-family:var(--display);font-size:38px;font-weight:800;letter-spacing:-1.2px}
+.section-sub{font-size:15px;color:var(--text2);margin-top:10px;max-width:560px;line-height:1.7;font-weight:300}
+
+/* ── CARDS ── */
+.card-grid{display:grid;gap:16px}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;transition:border-color 0.2s,transform 0.2s}
+.card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.card-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;border:1px solid}
+.card-icon.green{background:var(--accent-dim);border-color:rgba(0,229,160,0.2)}
+.card-icon.blue{background:var(--blue-dim);border-color:rgba(59,158,255,0.2)}
+.card-icon.amber{background:var(--amber-dim);border-color:rgba(255,179,71,0.2)}
+.card-icon.red{background:var(--red-dim);border-color:rgba(255,85,85,0.2)}
+.card-title{font-family:var(--display);font-size:16px;font-weight:700;margin-bottom:8px}
+.card-text{font-size:13px;color:var(--text2);line-height:1.65}
+.card-tag{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.05em}
+
+/* ── ANALYZE PAGE ── */
+.analyze-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px}
+.upload-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius);padding:40px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg2);margin:20px;position:relative}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:var(--accent-dim)}
+.upload-zone input[type=file]{display:none}
+.upload-emoji{font-size:44px;margin-bottom:14px;display:block;transition:transform 0.2s}
+.upload-zone:hover .upload-emoji{transform:scale(1.1)}
+.upload-title{font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:6px}
+.upload-hint{font-size:13px;color:var(--text2)}
+.fmt-row{display:flex;gap:6px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.fmt{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:10px;color:var(--text3)}
+.divider-or{display:flex;align-items:center;gap:12px;padding:0 20px;color:var(--text3);font-family:var(--mono);font-size:11px;letter-spacing:0.08em}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border)}
+.demo-section{padding:0 20px 20px}
+.demo-heading{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;margin-bottom:10px}
+.demo-list{display:flex;flex-direction:column;gap:8px}
+.demo-item{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:all 0.2s}
+.demo-item:hover{border-color:var(--accent);background:var(--accent-dim)}
+.demo-orb{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:17px}
+.demo-meta{flex:1}
+.demo-name{font-size:13px;font-weight:500}
+.demo-sub{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:2px}
+.chip{font-size:10px;font-family:var(--mono);padding:3px 8px;border-radius:4px;background:var(--bg3);border:1px solid var(--border);color:var(--text3)}
+
+/* ── RESULTS PANEL ── */
+.results-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;min-height:480px;display:flex;flex-direction:column}
+.results-idle{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--text3)}
+.results-idle-icon{font-size:40px;margin-bottom:12px;opacity:0.4}
+.results-idle p{font-family:var(--mono);font-size:12px;line-height:1.6}
+.results-body{display:none;flex-direction:column;flex:1}
+.results-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.results-title{font-family:var(--display);font-size:15px;font-weight:700}
+.results-id{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px}
+.risk-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:100px;font-family:var(--mono);font-size:11px;font-weight:500}
+.risk-low{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(0,229,160,0.25)}
+.risk-med{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,179,71,0.25)}
+.risk-high{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,85,85,0.25)}
+.canvas-wrap{border-radius:var(--radius);overflow:hidden;background:#05100a;margin-bottom:16px;position:relative;aspect-ratio:1}
+#resultCanvas{width:100%;height:100%;display:block}
+.canvas-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,12,16,0.88);flex-direction:column;gap:10px}
+.spinner{width:40px;height:40px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-label{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:0.1em}
+.spin-step{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.metric-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.metric-val{font-family:var(--display);font-size:22px;font-weight:800}
+.metric-val.green{color:var(--accent)}
+.metric-val.blue{color:var(--blue)}
+.metric-val.amber{color:var(--amber)}
+.metric-val.red{color:var(--red)}
+.metric-val.white{color:var(--text)}
+.metric-lbl{font-size:10px;color:var(--text2);font-family:var(--mono);margin-top:3px;letter-spacing:0.05em}
+.growth-bar-wrap{margin-bottom:14px}
+.growth-bar-top{display:flex;justify-content:space-between;font-size:11px;font-family:var(--mono);color:var(--text2);margin-bottom:6px}
+.bar-track{height:6px;background:var(--bg);border-radius:100px;overflow:hidden;border:1px solid var(--border)}
+.bar-fill{height:100%;border-radius:100px;transition:width 1s cubic-bezier(0.4,0,0.2,1);width:0}
+.report-btn{width:100%;background:var(--accent);color:#000;padding:12px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;border:none;font-family:var(--display);transition:all 0.15s;margin-top:auto}
+.report-btn:hover{background:#00ffb3}
+.report-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.25s;backdrop-filter:blur(4px)}
+.modal-bg.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:700px;max-height:88vh;overflow-y:auto}
+.modal-hd{padding:22px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:10}
+.modal-hd-title{font-family:var(--display);font-size:19px;font-weight:800}
+.modal-close{width:30px;height:30px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
+.modal-close:hover{color:var(--text);border-color:var(--border2)}
+.modal-bd{padding:28px}
+.report-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.rmi{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px}
+.rmi-label{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:3px;letter-spacing:0.06em}
+.rmi-value{font-size:14px;font-weight:500}
+.report-section{margin-bottom:24px}
+.report-section-title{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:0.16em;text-transform:uppercase;margin-bottom:10px}
+.report-text{font-size:13px;color:var(--text2);line-height:1.72;font-weight:300}
+.findings-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.finding-item{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text2)}
+.finding-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.fd-ok{background:var(--accent)}
+.fd-warn{background:var(--amber)}
+.fd-alert{background:var(--red)}
+.dl-btn{display:inline-flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-size:13px;font-family:var(--mono);color:var(--text2);cursor:pointer;transition:all 0.15s;margin-top:16px}
+.dl-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── SCIENCE PAGE ── */
+.pipeline-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin:40px 0;position:relative}
+.pipeline-flow::before{content:'';position:absolute;top:22px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--border),var(--border),var(--border),transparent)}
+.pipe-step{display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;z-index:1}
+.pipe-node{width:44px;height:44px;border-radius:50%;background:var(--card);border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px}
+.pipe-node.lit{border-color:var(--accent);background:var(--accent-dim)}
+.pipe-label{font-size:12px;font-family:var(--mono);color:var(--text2)}
+.pipe-sub{font-size:10px;color:var(--text3);margin-top:3px}
+.bench-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px}
+.bench-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px}
+.bench-title{font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:20px}
+.bench-row{margin-bottom:14px}
+.bench-row-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.bench-row-val{font-family:var(--mono)}
+.org-cloud{display:flex;flex-wrap:wrap;gap:8px}
+.org-chip{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 12px;font-size:12px;font-family:var(--mono);color:var(--text2);transition:all 0.15s;cursor:default}
+.org-chip:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── DASHBOARD PAGE ── */
+.dash-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.dash-kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.dkpi-val{font-family:var(--display);font-size:32px;font-weight:800;line-height:1}
+.dkpi-lbl{font-size:11px;color:var(--text2);font-family:var(--mono);margin-top:5px;letter-spacing:0.05em}
+.dkpi-change{font-size:11px;font-family:var(--mono);margin-top:8px}
+.up{color:var(--accent)}.dn{color:var(--red)}
+.dash-main{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.dash-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+.dash-card-title{font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:20px}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:130px}
+.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;background:var(--accent);margin-top:auto;transition:height 0.8s cubic-bezier(0.4,0,0.2,1);min-height:4px;opacity:0.8}
+.chart-bar:hover{opacity:1}
+.chart-bar.dim{background:var(--border2)}
+.chart-lbl{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.history-list{display:flex;flex-direction:column;gap:0}
+.history-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity 0.15s}
+.history-item:last-child{border-bottom:none}
+.history-item:hover{opacity:0.75}
+.history-orb{width:34px;height:34px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--border)}
+.history-info{flex:1}
+.history-name{font-size:13px;font-weight:500}
+.history-meta{font-size:10px;color:var(--text2);font-family:var(--mono);margin-top:2px}
+.empty-state{text-align:center;padding:40px;color:var(--text3);font-family:var(--mono);font-size:12px}
+.refresh-btn{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-family:var(--mono);font-size:11px;color:var(--text2);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px}
+.refresh-btn:hover{border-color:var(--border2);color:var(--text)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:12px 20px;font-size:13px;font-family:var(--mono);z-index:999;transform:translateY(80px);opacity:0;transition:all 0.3s;max-width:320px}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.success{border-color:rgba(0,229,160,0.4);color:var(--accent)}
+#toast.error{border-color:rgba(255,85,85,0.4);color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- ── NAVBAR ─────────────────────────────────────────────────── -->
+<nav>
+  <div class="logo" onclick="showPage('home')">
+    <div class="logo-mark"><div class="logo-dot"></div></div>
+    <span class="logo-text">Petri<span>AI</span></span>
+  </div>
+  <div class="nav-links">
+    <div class="nav-link active" onclick="showPage('home')">home</div>
+    <div class="nav-link" onclick="showPage('analyze')">analyze</div>
+    <div class="nav-link" onclick="showPage('science')">science</div>
+    <div class="nav-link" onclick="showPage('dashboard')">dashboard</div>
+  </div>
+  <div class="nav-actions">
+    <div class="api-status" id="apiStatus">
+      <div class="api-dot" id="apiDot"></div>
+      <span id="apiLabel">checking...</span>
+    </div>
+    <button class="btn-nav" onclick="showPage('analyze')">Open Lab →</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HOME PAGE
+══════════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div>
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div>
+        <span>AI-POWERED MICROBIAL ANALYSIS</span>
+      </div>
+      <h1>Colony counting,<br><em>reimagined</em><br>for modern labs</h1>
+      <p class="hero-sub">Upload a petri dish photo and get instant colony counts, growth density maps, contamination flags, and ISO 7218-ready lab reports — powered by computer vision.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="showPage('analyze')">Analyze a Dish →</button>
+        <button class="btn-outline" onclick="showPage('science')">How It Works</button>
+      </div>
+      <div class="hero-kpis">
+        <div class="kpi"><div class="kpi-val">98.2%</div><div class="kpi-lbl">DETECTION ACCURACY</div></div>
+        <div class="kpi"><div class="kpi-val">&lt;5s</div><div class="kpi-lbl">ANALYSIS TIME</div></div>
+        <div class="kpi"><div class="kpi-val">50k+</div><div class="kpi-lbl">TRAINING IMAGES</div></div>
+      </div>
+    </div>
+    <div class="petri-visual">
+      <div class="petri-ring" id="heroPetri">
+        <div class="scan-beam"></div>
+      </div>
+      <div class="hero-dish-label">SAMPLE_ECOLI_003 · LIVE FEED</div>
+    </div>
+  </div>
+
+  <!-- scrolling strip -->
+  <div class="features-strip">
+    <div class="features-track" id="featureTrack">
+      <div class="feature-item"><span>✦</span> Colony Detection</div>
+      <div class="feature-item"><span>✦</span> Growth Density Mapping</div>
+      <div class="feature-item"><span>✦</span> Contamination Flagging</div>
+      <div class="feature-item"><span>✦</span> CFU/mL Estimation</div>
+      <div class="feature-item"><span>✦</span> ISO 7218 Reports</div>
+      <div class="feature-item"><span>✦</span> Morphology Analysis</div>
+      <div class="feature-item"><span>✦</span> Time-Series Tracking</div>
+      <div class="feature-item"><span>✦</span> ELN Integration</div>
+      <div class="feature-item"><span>✦</span> Colony Detection</div>
+      <div class="feature-item"><span>✦</span> Growth Density Mapping</div>
+      <div class="feature-item"><span>✦</span> Contamination Flagging</div>
+      <div class="feature-item"><span>✦</span> CFU/mL Estimation</div>
+      <div class="feature-item"><span>✦</span> ISO 7218 Reports</div>
+      <div class="feature-item"><span>✦</span> Morphology Analysis</div>
+      <div class="feature-item"><span>✦</span> Time-Series Tracking</div>
+      <div class="feature-item"><span>✦</span> ELN Integration</div>
+    </div>
+  </div>
+
+  <div class="section-wrap">
+    <div class="section-eyebrow">CAPABILITIES</div>
+    <h2>Everything a modern lab needs</h2>
+    <div class="section-sub">From a single image to a full audit trail — PetriAI handles the entire analysis workflow.</div>
+    <div class="card-grid grid-3" style="margin-top:36px">
+      <div class="card"><div class="card-icon green">🔬</div><div class="card-title">Colony Detection</div><div class="card-text">Computer vision identifies colonies with sub-pixel precision using CLAHE enhancement and adaptive watershed segmentation. Works across species.</div><div class="card-tag">OpenCV · YOLOv8</div></div>
+      <div class="card"><div class="card-icon blue">📊</div><div class="card-title">Density Mapping</div><div class="card-text">2D Gaussian KDE generates continuous heatmaps of spatial distribution. Reveals inhibition zones, inoculation bias, and diffusion gradients.</div><div class="card-tag">NumPy · SciPy</div></div>
+      <div class="card"><div class="card-icon amber">⚠️</div><div class="card-title">Contamination Flags</div><div class="card-text">14-feature morphology classifier identifies outlier colonies by circularity, pigmentation, texture, and edge regularity. Flags suspect colonies instantly.</div><div class="card-tag">Random Forest</div></div>
+      <div class="card"><div class="card-icon red">📄</div><div class="card-title">Lab Reports</div><div class="card-text">Structured ISO 7218-style reports generated automatically. Includes colony count, CFU estimate, contamination status, and actionable recommendations.</div><div class="card-tag">AI · PDF Export</div></div>
+      <div class="card"><div class="card-icon green">📈</div><div class="card-title">History Dashboard</div><div class="card-text">All analyses stored locally with full searchable history. Track trends across experiments, compare batches, and monitor contamination rates over time.</div><div class="card-tag">SQLite · Charts</div></div>
+      <div class="card"><div class="card-icon blue">🔒</div><div class="card-title">Local & Private</div><div class="card-text">Runs entirely on your machine. No data leaves your network unless you configure cloud sync. SOC 2 compatible deployment paths available.</div><div class="card-tag">Self-Hosted</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     ANALYZE PAGE
+══════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-analyze">
+  <div class="section-wrap">
+    <div class="section-eyebrow">ANALYSIS ENGINE</div>
+    <h2>Upload & Analyze</h2>
+    <div class="section-sub">Drop a petri dish image and our CV pipeline will count colonies, measure density, and generate a full report.</div>
+
+    <div class="analyze-layout">
+
+      <!-- left: upload -->
+      <div class="upload-card">
+        <div class="upload-zone" id="uploadZone"
+             ondragover="dragOver(event,true)" ondragleave="dragOver(event,false)" ondrop="handleDrop(event)"
+             onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept="image/*" onchange="handleFileChange(event)"/>
+          <span class="upload-emoji">🧫</span>
+          <div class="upload-title">Drop petri dish image</div>
+          <div class="upload-hint">or click to browse · max 20MB</div>
+          <div class="fmt-row">
+            <span class="fmt">JPG</span><span class="fmt">PNG</span>
+            <span class="fmt">TIFF</span><span class="fmt">HEIC</span><span class="fmt">BMP</span>
+          </div>
+        </div>
+
+        <div class="divider-or">OR LOAD A DEMO</div>
+
+        <div class="demo-section">
+          <div class="demo-heading">— PRELOADED SAMPLES —</div>
+          <div class="demo-list">
+            <div class="demo-item" onclick="runDemo(0)">
+              <div class="demo-orb" style="background:radial-gradient(circle,#1a3d2a,#060e0b)">🦠</div>
+              <div class="demo-meta">
+                <div class="demo-name">E. coli — High Density Culture</div>
+                <div class="demo-sub">LB Agar · 37°C · 24h · Demo 1</div>
+              </div>
+              <span class="chip">DEMO 1</span>
+            </div>
+            <div class="demo-item" onclick="runDemo(1)">
+              <div class="demo-orb" style="background:radial-gradient(circle,#2d1a3d,#0d070f)">🔬</div>
+              <div class="demo-meta">
+                <div class="demo-name">S. aureus — Antibiotic Screen</div>
+                <div class="demo-sub">Mueller-Hinton · 35°C · 48h · Demo 2</div>
+              </div>
+              <span class="chip">DEMO 2</span>
+            </div>
+            <div class="demo-item" onclick="runDemo(2)">
+              <div class="demo-orb" style="background:radial-gradient(circle,#2d1a1a,#0d0808)">🧪</div>
+              <div class="demo-meta">
+                <div class="demo-name">Mixed Culture — Contamination</div>
+                <div class="demo-sub">Blood Agar · 37°C · 36h · Demo 3</div>
+              </div>
+              <span class="chip">DEMO 3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: results -->
+      <div class="results-panel">
+        <div class="results-idle" id="resultsIdle">
+          <div class="results-idle-icon">🧫</div>
+          <p>Upload a petri dish image<br>or select a demo sample<br>to begin analysis</p>
+        </div>
+        <div class="results-body" id="resultsBody">
+          <div class="results-header">
+            <div>
+              <div class="results-title" id="rTitle">Sample Analysis</div>
+              <div class="results-id" id="rId">—</div>
+            </div>
+            <span class="risk-pill risk-low" id="rRisk">● LOW RISK</span>
+          </div>
+          <div class="canvas-wrap" style="position:relative">
+            <canvas id="resultCanvas" width="400" height="400"></canvas>
+            <div class="canvas-overlay" id="canvasOverlay">
+              <div class="spinner"></div>
+              <div class="spin-label">ANALYZING</div>
+              <div class="spin-step" id="spinStep">Preprocessing image...</div>
+            </div>
+          </div>
+          <div class="metrics-grid">
+            <div class="metric-box"><div class="metric-val green" id="mColonies">—</div><div class="metric-lbl">COLONIES DETECTED</div></div>
+            <div class="metric-box"><div class="metric-val blue" id="mCFU">—</div><div class="metric-lbl">EST. CFU/mL</div></div>
+            <div class="metric-box"><div class="metric-val amber" id="mCoverage">—</div><div class="metric-lbl">DISH COVERAGE</div></div>
+            <div class="metric-box"><div class="metric-val white" id="mContam">—</div><div class="metric-lbl">CONTAMINATION</div></div>
+          </div>
+          <div class="growth-bar-wrap">
+            <div class="growth-bar-top"><span>GROWTH DENSITY</span><span id="mGrowth">—</span></div>
+            <div class="bar-track"><div class="bar-fill" id="growthBar"></div></div>
+          </div>
+          <button class="report-btn" id="reportBtn" onclick="openModal()" disabled>Generate Lab Report →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCIENCE PAGE
+══════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-science">
+  <div class="section-wrap">
+    <div class="section-eyebrow">THE SCIENCE</div>
+    <h2>How PetriAI works</h2>
+    <div class="section-sub">A real computer vision pipeline — preprocessing, segmentation, morphology classification, and AI-generated reporting.</div>
+
+    <div class="pipeline-flow">
+      <div class="pipe-step"><div class="pipe-node lit">📸</div><div class="pipe-label">Upload</div><div class="pipe-sub">JPG · PNG · TIFF</div></div>
+      <div class="pipe-step"><div class="pipe-node lit">⚙️</div><div class="pipe-label">Preprocess</div><div class="pipe-sub">CLAHE · Hough</div></div>
+      <div class="pipe-step"><div class="pipe-node lit">🧠</div><div class="pipe-label">Detect</div><div class="pipe-sub">Contour + Watershed</div></div>
+      <div class="pipe-step"><div class="pipe-node lit">📐</div><div class="pipe-label">Classify</div><div class="pipe-sub">14-feature RF</div></div>
+      <div class="pipe-step"><div class="pipe-node lit">📄</div><div class="pipe-label">Report</div><div class="pipe-sub">ISO 7218</div></div>
+    </div>
+
+    <div class="card-grid grid-3" style="margin-bottom:24px">
+      <div class="card">
+        <div class="card-icon green">📸</div>
+        <div class="card-title">Image Preprocessing</div>
+        <div class="card-text">Raw images undergo white balance correction, lens distortion removal, and circular dish detection via Hough circle transform. CLAHE enhancement reveals low-contrast colonies invisible to the naked eye.</div>
+        <div class="card-tag">OpenCV · NumPy</div>
+      </div>
+      <div class="card">
+        <div class="card-icon blue">🧠</div>
+        <div class="card-title">Colony Segmentation</div>
+        <div class="card-text">Background subtraction via large Gaussian blur separates colonies from agar. Adaptive Otsu thresholding + morphological cleanup + contour extraction provides robust colony boundaries across diverse media types.</div>
+        <div class="card-tag">cv2.findContours · Watershed</div>
+      </div>
+      <div class="card">
+        <div class="card-icon amber">📐</div>
+        <div class="card-title">Morphology Analysis</div>
+        <div class="card-text">Each colony is characterized by 14 features: area, circularity, mean color (RGB), color variance, radius, eccentricity, and more. These feed a Random Forest that classifies target vs contaminant.</div>
+        <div class="card-tag">scikit-learn · scipy</div>
+      </div>
+    </div>
+
+    <div class="bench-grid">
+      <div class="bench-card">
+        <div class="bench-title">Accuracy Benchmarks</div>
+        <div class="bench-row">
+          <div class="bench-row-top"><span>Colony count accuracy</span><span class="bench-row-val" style="color:var(--accent)">98.2%</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:98.2%;background:var(--accent)"></div></div>
+        </div>
+        <div class="bench-row">
+          <div class="bench-row-top"><span>Contamination detection</span><span class="bench-row-val" style="color:var(--blue)">96.7%</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:96.7%;background:var(--blue)"></div></div>
+        </div>
+        <div class="bench-row">
+          <div class="bench-row-top"><span>Species classification</span><span class="bench-row-val" style="color:var(--amber)">91.4%</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:91.4%;background:var(--amber)"></div></div>
+        </div>
+        <div class="bench-row">
+          <div class="bench-row-top"><span>Inhibition zone detection</span><span class="bench-row-val" style="color:var(--accent)">99.1%</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:99.1%;background:var(--accent)"></div></div>
+        </div>
+      </div>
+      <div class="bench-card">
+        <div class="bench-title">Validated Organisms</div>
+        <div class="org-cloud">
+          <span class="org-chip" style="color:var(--accent)">E. coli</span>
+          <span class="org-chip" style="color:var(--blue)">S. aureus</span>
+          <span class="org-chip">Salmonella spp.</span>
+          <span class="org-chip" style="color:var(--amber)">B. subtilis</span>
+          <span class="org-chip">P. aeruginosa</span>
+          <span class="org-chip" style="color:var(--accent)">K. pneumoniae</span>
+          <span class="org-chip">C. albicans</span>
+          <span class="org-chip" style="color:var(--red)">MRSA</span>
+          <span class="org-chip">S. pneumoniae</span>
+          <span class="org-chip" style="color:var(--blue)">L. innocua</span>
+          <span class="org-chip">A. niger</span>
+          <span class="org-chip">+ custom models</span>
+        </div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--text2);line-height:1.6">
+          Trained on <strong style="color:var(--text)">50,000+</strong> annotated images from university labs, food safety facilities, and clinical microbiology departments.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     DASHBOARD PAGE
+══════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-dashboard">
+  <div class="section-wrap">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px">
+      <div>
+        <div class="section-eyebrow">LAB DASHBOARD</div>
+        <h2>Analysis History</h2>
+      </div>
+      <button class="refresh-btn" onclick="loadDashboard()">↺ Refresh</button>
+    </div>
+
+    <div class="dash-kpis">
+      <div class="dash-kpi">
+        <div class="dkpi-val" style="color:var(--accent)" id="dkpiTotal">—</div>
+        <div class="dkpi-lbl">TOTAL ANALYSES</div>
+        <div class="dkpi-change up" id="dkpiTotalSub">—</div>
+      </div>
+      <div class="dash-kpi">
+        <div class="dkpi-val" style="color:var(--blue)" id="dkpiColonies">—</div>
+        <div class="dkpi-lbl">COLONIES COUNTED</div>
+        <div class="dkpi-change up">All time</div>
+      </div>
+      <div class="dash-kpi">
+        <div class="dkpi-val" style="color:var(--amber)" id="dkpiContam">—</div>
+        <div class="dkpi-lbl">CONTAMINATION RATE</div>
+        <div class="dkpi-change" id="dkpiContamSub">—</div>
+      </div>
+      <div class="dash-kpi">
+        <div class="dkpi-val" id="dkpiStatus" style="color:var(--accent)">Online</div>
+        <div class="dkpi-lbl">SERVER STATUS</div>
+        <div class="dkpi-change up">localhost:5050</div>
+      </div>
+    </div>
+
+    <div class="dash-main">
+      <div class="dash-card">
+        <div class="dash-card-title">Analyses — Last 7 Days</div>
+        <div class="chart-bars" id="dashChart">
+          <div class="empty-state" style="flex:1">Run some analyses to see your chart</div>
+        </div>
+      </div>
+      <div class="dash-card" style="overflow-y:auto;max-height:280px">
+        <div class="dash-card-title">Recent Analyses</div>
+        <div class="history-list" id="historyList">
+          <div class="empty-state">No analyses yet — run one first</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     REPORT MODAL
+══════════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="reportModal" onclick="closeModalBg(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-hd-title">Lab Analysis Report</div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div class="modal-bd">
+      <div class="report-meta-grid" id="modalMeta"></div>
+      <div class="report-section">
+        <div class="report-section-title">Executive Summary</div>
+        <div class="report-text" id="modalSummary"></div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">Colony Analysis</div>
+        <div class="report-text" id="modalColony"></div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">Contamination Assessment</div>
+        <div class="report-text" id="modalContam"></div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">Key Findings</div>
+        <ul class="findings-list" id="modalFindings"></ul>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title">Recommendations</div>
+        <div class="report-text" id="modalRec"></div>
+      </div>
+      <button class="dl-btn" onclick="downloadReport()">⬇ Download Report (.txt)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<script>
+const API = 'http://localhost:5050/api';
+let currentResult = null;
+
+// ── NAV ───────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const idx = {home:0,analyze:1,science:2,dashboard:3}[id];
+  document.querySelectorAll('.nav-link')[idx].classList.add('active');
+  if (id === 'dashboard') loadDashboard();
+}
+
+// ── HERO PETRI ANIMATION ──────────────────────────────────────────────
+function buildHeroPetri() {
+  const petri = document.getElementById('heroPetri');
+  petri.querySelectorAll('.colony-dot').forEach(e => e.remove());
+  for (let i = 0; i < 45; i++) {
+    const el = document.createElement('div');
+    el.className = 'colony-dot';
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * 38;
+    const x = 50 + Math.cos(angle) * dist;
+    const y = 50 + Math.sin(angle) * dist;
+    const s = 3 + Math.random() * 9;
+    const op = 0.3 + Math.random() * 0.6;
+    el.style.cssText = `left:${x}%;top:${y}%;width:${s}px;height:${s}px;` +
+      `--op:${op};--dur:${2+Math.random()*3}s;--delay:${Math.random()*4}s`;
+    petri.appendChild(el);
+  }
+}
+buildHeroPetri();
+
+// ── API HEALTH CHECK ──────────────────────────────────────────────────
+async function checkHealth() {
+  const dot = document.getElementById('apiDot');
+  const lbl = document.getElementById('apiLabel');
+  try {
+    const r = await fetch(API + '/health', { signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      dot.className = 'api-dot ok';
+      lbl.textContent = 'API online';
+    } else { throw new Error(); }
+  } catch {
+    dot.className = 'api-dot err';
+    lbl.textContent = 'API offline';
+  }
+}
+checkHealth();
+setInterval(checkHealth, 15000);
+
+// ── UPLOAD HANDLING ───────────────────────────────────────────────────
+function dragOver(e, on) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.toggle('drag-over', on);
+}
+function handleDrop(e) {
+  e.preventDefault();
+  dragOver(e, false);
+  const file = e.dataTransfer.files[0];
+  if (file) uploadFile(file);
+}
+function handleFileChange(e) {
+  const file = e.target.files[0];
+  if (file) uploadFile(file);
+  e.target.value = '';
+}
+
+// ── DEMO DATA ─────────────────────────────────────────────────────────
+const DEMOS = [
+  {
+    name:'E. coli — High Density Culture',sub:'LB Agar · 37°C · 24h',
+    colony_count:84,cfu_estimate:'8.4×10^5',coverage_pct:73,contamination:'None',
+    risk_level:'low',growth_level:'HIGH',growth_pct:82,contaminant_count:0,
+    colors:{main:'#00e5a0',contam:'#ff5555'},
+    bgGrad:'radial-gradient(circle at 42% 38%,#1a3d2a,#0d2018,#060e0b)',
+    report:{
+      summary:'The E. coli culture demonstrates robust, uniform growth consistent with exponential phase development. Colony density falls within the expected range for overnight LB broth cultures plated at standard dilution.',
+      colony_analysis:'84 discrete colonies were detected with a mean diameter of 2.3mm (σ=0.4mm). Colony morphology is highly uniform — circular, convex, smooth-edged — consistent with wild-type E. coli K-12. Colony distribution shows moderate central clustering, likely attributable to inoculation technique.',
+      contamination_assessment:'No contamination events detected. All 84 colonies exhibit morphological profiles consistent with a pure culture. Circularity, color distribution, and size variance fall within expected limits.',
+      findings:[
+        {type:'ok',text:'Colony count (84) within countable range — consider 10× dilution for next passage'},
+        {type:'ok',text:'Growth uniformity index 0.91 — excellent inoculation technique confirmed'},
+        {type:'warn',text:'Slight central clustering detected — swirl inoculation recommended'},
+        {type:'ok',text:'No contamination detected across all 14 morphological feature vectors'},
+      ],
+      recommendations:'Proceed with downstream processing. For quantitative work, prepare a 10⁻⁶ dilution to bring count into the 30–300 ideal range. Central clustering can be mitigated by spiral inoculation from center outward.',
+    }
+  },
+  {
+    name:'S. aureus — Antibiotic Screen',sub:'Mueller-Hinton · 35°C · 48h',
+    colony_count:31,cfu_estimate:'3.1×10^4',coverage_pct:28,contamination:'Suspected',
+    risk_level:'med',growth_level:'MODERATE',growth_pct:41,contaminant_count:2,
+    colors:{main:'#9b7fff',contam:'#ff5555'},
+    bgGrad:'radial-gradient(circle at 50% 45%,#2d1a3d,#1a0f28,#0d0718)',
+    report:{
+      summary:'S. aureus culture shows moderate growth consistent with a sensitive strain under partial antibiotic pressure. An inhibition zone is visible in the upper quadrant, and 2 colonies are flagged for contamination review.',
+      colony_analysis:'31 colonies detected. 29 (93.5%) exhibit standard S. aureus morphology: golden-yellow, circular, raised, 2–3mm diameter. 2 colonies in the lower-right quadrant display atypical white coloration and irregular margins. A clear inhibition zone (~18mm diameter) adjacent to the antibiotic disc indicates antibiotic sensitivity.',
+      contamination_assessment:'2 colonies flagged as probable contaminants based on morphological deviation: white coloration vs expected golden-yellow, irregular margin (circularity 0.61 vs expected >0.85), and anomalous surface texture. Recommendation: re-streak on MSA to confirm purity.',
+      findings:[
+        {type:'ok',text:'Inhibition zone detected: 18mm diameter — antibiotic sensitivity confirmed'},
+        {type:'warn',text:'2 atypical colonies flagged — morphological deviation from target organism'},
+        {type:'alert',text:'1 colony classified as probable contaminant — selective media confirmation required'},
+        {type:'ok',text:'93.5% of colony population morphologically homogeneous — culture acceptable for MIC testing'},
+      ],
+      recommendations:'Confirm antibiotic sensitivity via E-test for precise MIC. Sub-culture flagged colonies on Mannitol Salt Agar to confirm or exclude contamination. If confirmed, prepare fresh stock from glycerol stock.',
+    }
+  },
+  {
+    name:'Mixed Culture — Contamination',sub:'Blood Agar · 37°C · 36h',
+    colony_count:19,cfu_estimate:'1.9×10^3',coverage_pct:18,contamination:'CONFIRMED',
+    risk_level:'high',growth_level:'LOW',growth_pct:22,contaminant_count:12,
+    colors:{main:'#ff5555',contam:'#ff5555'},
+    bgGrad:'radial-gradient(circle at 45% 50%,#2d1a1a,#1a0d0d,#0d0808)',
+    report:{
+      summary:'This mixed-culture screen reveals significant contamination. Only 7 of 19 detected colonies match the expected target organism profile. The remaining 12 exhibit diverse morphologies consistent with a poly-microbial contamination event.',
+      colony_analysis:'19 colonies detected across 3 distinct morphological clusters. Cluster A (7 colonies, 37%): small, grey, α-hemolytic — consistent with target Streptococcal species. Cluster B (8 colonies): large, white, beta-hemolytic — suspected Staphylococcus spp. Cluster C (4 colonies): spreading, translucent — suspected Proteus/Pseudomonas spp.',
+      contamination_assessment:'Contamination confirmed. 12 of 19 colonies (63%) do not match target organism morphology. Three distinct contaminant morphotypes identified. Beta-hemolysis pattern indicates at least one species with significant hemolytic activity. Culture should not be used for downstream applications.',
+      findings:[
+        {type:'alert',text:'Contamination CONFIRMED: 63% of colonies are non-target organisms'},
+        {type:'alert',text:'3 distinct contaminant morphotypes identified — poly-microbial event'},
+        {type:'alert',text:'Beta-hemolytic colonies detected — potential pathogenic contamination'},
+        {type:'warn',text:'Target organism recovery at 37% — below acceptable threshold'},
+      ],
+      recommendations:'DISCARD this culture. Do not proceed. Investigate contamination source: check autoclave logs, laminar flow hood HEPA integrity, and aseptic technique. Restart from certified frozen stock with selective antibiotics added to media.',
+    }
+  }
+];
+
+// ── ANALYSIS FLOW ─────────────────────────────────────────────────────
+const STEPS = [
+  'Preprocessing image...','Detecting dish boundary...',
+  'Running colony detection...','Measuring morphology...',
+  'Classifying organisms...','Generating report...'
+];
+
+function startSpinner() {
+  document.getElementById('resultsIdle').style.display = 'none';
+  document.getElementById('resultsBody').style.display = 'flex';
+  document.getElementById('canvasOverlay').style.display = 'flex';
+  document.getElementById('reportBtn').disabled = true;
+  let si = 0;
+  const iv = setInterval(() => {
+    si = (si + 1) % STEPS.length;
+    document.getElementById('spinStep').textContent = STEPS[si];
+  }, 550);
+  return iv;
+}
+
+function stopSpinner(iv) {
+  clearInterval(iv);
+  document.getElementById('canvasOverlay').style.display = 'none';
+}
+
+async function uploadFile(file) {
+  const iv = startSpinner();
+  drawPlaceholderDish(null);
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  try {
+    const res = await fetch(API + '/analyze', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    stopSpinner(iv);
+    currentResult = { ...data, name: file.name };
+    renderRealResults(data, file.name);
+    showToast('Analysis complete — ' + data.colony_count + ' colonies detected', 'success');
+  } catch (err) {
+    stopSpinner(iv);
+    showToast('Error: ' + err.message, 'error');
+    document.getElementById('resultsIdle').style.display = 'flex';
+    document.getElementById('resultsBody').style.display = 'none';
+  }
+}
+
+function runDemo(idx) {
+  const demo = DEMOS[idx];
+  const iv = startSpinner();
+  drawPlaceholderDish(demo);
+
+  setTimeout(() => {
+    stopSpinner(iv);
+    currentResult = { ...demo, name: demo.name, report: demo.report };
+    renderDemoResults(demo);
+    showToast('Demo analysis complete — ' + demo.colony_count + ' colonies', 'success');
+  }, 3200);
+}
+
+// ── RENDER REAL RESULTS (from server) ────────────────────────────────
+function renderRealResults(data, filename) {
+  document.getElementById('rTitle').textContent = filename;
+  document.getElementById('rId').textContent = 'ID: ' + (data.id || '—') + ' · ' + data.analysis_time_ms + 'ms';
+  setRisk(data.risk_level);
+  document.getElementById('mColonies').textContent = data.colony_count;
+  document.getElementById('mCFU').textContent = data.cfu_estimate;
+  document.getElementById('mCoverage').textContent = data.coverage_pct + '%';
+
+  const cv = document.getElementById('mContam');
+  cv.textContent = data.contamination;
+  cv.className = 'metric-val ' + (data.contamination === 'None' ? 'green' : data.contamination === 'Suspected' ? 'amber' : 'red');
+
+  document.getElementById('mGrowth').textContent = data.growth_level;
+  const fill = document.getElementById('growthBar');
+  const c = data.growth_pct > 65 ? 'var(--red)' : data.growth_pct > 35 ? 'var(--amber)' : 'var(--accent)';
+  fill.style.background = c;
+  setTimeout(() => { fill.style.width = data.growth_pct + '%'; }, 50);
+
+  // draw annotated image from server
+  if (data.annotated_image) {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.getElementById('resultCanvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+    };
+    img.src = data.annotated_image;
+  }
+
+  document.getElementById('reportBtn').disabled = false;
+  populateModal(data.report, data, filename);
+}
+
+// ── RENDER DEMO RESULTS ───────────────────────────────────────────────
+function renderDemoResults(demo) {
+  document.getElementById('rTitle').textContent = demo.name;
+  document.getElementById('rId').textContent = demo.sub + ' · Demo';
+  setRisk(demo.risk_level);
+  document.getElementById('mColonies').textContent = demo.colony_count;
+  document.getElementById('mCFU').textContent = demo.cfu_estimate;
+  document.getElementById('mCoverage').textContent = demo.coverage_pct + '%';
+
+  const cv = document.getElementById('mContam');
+  cv.textContent = demo.contamination;
+  cv.className = 'metric-val ' + (demo.contamination === 'None' ? 'green' : demo.contamination === 'Suspected' ? 'amber' : 'red');
+
+  document.getElementById('mGrowth').textContent = demo.growth_level;
+  const fill = document.getElementById('growthBar');
+  const c = demo.growth_pct > 65 ? 'var(--red)' : demo.growth_pct > 35 ? 'var(--amber)' : 'var(--accent)';
+  fill.style.background = c;
+  setTimeout(() => { fill.style.width = demo.growth_pct + '%'; }, 50);
+
+  drawAnnotatedDemo(demo);
+  document.getElementById('reportBtn').disabled = false;
+  populateModal(demo.report, demo, demo.name);
+}
+
+function setRisk(level) {
+  const el = document.getElementById('rRisk');
+  el.className = 'risk-pill risk-' + level;
+  el.textContent = '● ' + level.toUpperCase() + ' RISK';
+}
+
+// ── CANVAS DRAWING ────────────────────────────────────────────────────
+function drawPlaceholderDish(demo) {
+  const canvas = document.getElementById('resultCanvas');
+  canvas.width = 400; canvas.height = 400;
+  const ctx = canvas.getContext('2d');
+  const cx = 200, cy = 200, r = 192;
+  const grd = ctx.createRadialGradient(cx * 0.8, cy * 0.7, r * 0.1, cx, cy, r);
+  const c = demo ? demo.colors.main : '#00e5a0';
+  grd.addColorStop(0, c + '22');
+  grd.addColorStop(0.5, c + '11');
+  grd.addColorStop(1, '#000000');
+  ctx.fillStyle = '#05100a'; ctx.fillRect(0, 0, 400, 400);
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = grd; ctx.fillRect(0, 0, 400, 400);
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = '#1e2d3a'; ctx.lineWidth = 1.5; ctx.stroke();
+}
+
+function drawAnnotatedDemo(demo) {
+  const canvas = document.getElementById('resultCanvas');
+  canvas.width = 400; canvas.height = 400;
+  const ctx = canvas.getContext('2d');
+  const cx = 200, cy = 200, r = 192;
+  const grd = ctx.createRadialGradient(cx * 0.8, cy * 0.7, r * 0.1, cx, cy, r);
+  grd.addColorStop(0, demo.colors.main + '33');
+  grd.addColorStop(0.5, demo.colors.main + '18');
+  grd.addColorStop(1, '#000000');
+  ctx.fillStyle = '#05100a'; ctx.fillRect(0, 0, 400, 400);
+  ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+  ctx.fillStyle = grd; ctx.fillRect(0, 0, 400, 400);
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = '#1e2d3a'; ctx.lineWidth = 1.5; ctx.stroke();
+
+  const total = demo.colony_count;
+  const contamCount = demo.contaminant_count || 0;
+  function rng(n) { let x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+
+  for (let i = 0; i < total; i++) {
+    let placed = false, tries = 0;
+    while (!placed && tries < 30) {
+      const angle = rng(i * 3) * Math.PI * 2;
+      const dist = rng(i * 3 + 1) * (r * 0.82);
+      const px = cx + Math.cos(angle) * dist;
+      const py = cy + Math.sin(angle) * dist;
+      const cr = 3 + rng(i * 3 + 2) * 5;
+      if (Math.hypot(px - cx, py - cy) < r - cr - 4) {
+        const isC = i < contamCount;
+        const col = isC ? '#ff5555' : demo.colors.main;
+        ctx.beginPath(); ctx.arc(px, py, cr + 4, 0, Math.PI * 2);
+        ctx.strokeStyle = col + '55'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.beginPath(); ctx.arc(px, py, cr, 0, Math.PI * 2);
+        ctx.fillStyle = col + 'aa'; ctx.fill();
+        placed = true;
+      }
+      tries++;
+    }
+  }
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────
+function populateModal(report, data, name) {
+  if (!report) return;
+  const now = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const id = data.id || ('DEMO-' + Date.now().toString(36).toUpperCase());
+  document.getElementById('modalMeta').innerHTML = `
+    <div class="rmi"><div class="rmi-label">SAMPLE</div><div class="rmi-value">${name}</div></div>
+    <div class="rmi"><div class="rmi-label">DATE</div><div class="rmi-value">${now}</div></div>
+    <div class="rmi"><div class="rmi-label">COLONIES</div><div class="rmi-value" style="color:var(--accent)">${data.colony_count || '—'} detected</div></div>
+    <div class="rmi"><div class="rmi-label">RISK</div><div class="rmi-value"><span class="risk-pill risk-${data.risk_level}">${(data.risk_level||'').toUpperCase()} RISK</span></div></div>
+  `;
+  document.getElementById('modalSummary').textContent = report.summary || '';
+  document.getElementById('modalColony').textContent = report.colony_analysis || '';
+  document.getElementById('modalContam').textContent = report.contamination_assessment || '';
+  document.getElementById('modalFindings').innerHTML = (report.findings || []).map(f => `
+    <li class="finding-item">
+      <div class="finding-dot ${f.type==='ok'?'fd-ok':f.type==='warn'?'fd-warn':'fd-alert'}"></div>
+      <div>${f.text}</div>
+    </li>
+  `).join('');
+  document.getElementById('modalRec').textContent = report.recommendations || '';
+}
+
+function openModal() {
+  document.getElementById('reportModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('reportModal').classList.remove('open');
+}
+function closeModalBg(e) {
+  if (e.target.id === 'reportModal') closeModal();
+}
+
+function downloadReport() {
+  if (!currentResult) return;
+  const r = currentResult.report || {};
+  const lines = [
+    'PETRIAI LAB ANALYSIS REPORT',
+    '============================',
+    'Sample: ' + (currentResult.name || '—'),
+    'Date: ' + new Date().toISOString(),
+    'Colonies Detected: ' + (currentResult.colony_count || '—'),
+    'CFU Estimate: ' + (currentResult.cfu_estimate || '—'),
+    'Coverage: ' + (currentResult.coverage_pct || '—') + '%',
+    'Contamination: ' + (currentResult.contamination || '—'),
+    'Risk Level: ' + (currentResult.risk_level || '—').toUpperCase(),
+    '',
+    'EXECUTIVE SUMMARY', '─'.repeat(40),
+    r.summary || '',
+    '',
+    'COLONY ANALYSIS', '─'.repeat(40),
+    r.colony_analysis || '',
+    '',
+    'CONTAMINATION ASSESSMENT', '─'.repeat(40),
+    r.contamination_assessment || '',
+    '',
+    'KEY FINDINGS', '─'.repeat(40),
+    ...(r.findings || []).map(f => '[' + f.type.toUpperCase() + '] ' + f.text),
+    '',
+    'RECOMMENDATIONS', '─'.repeat(40),
+    r.recommendations || '',
+    '',
+    '─'.repeat(40),
+    'Generated by PetriAI v1.0 · ' + new Date().toISOString(),
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'petriai-report-' + Date.now() + '.txt';
+  a.click();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const [statsRes, histRes] = await Promise.all([
+      fetch(API + '/stats'),
+      fetch(API + '/analyses'),
+    ]);
+    const stats = await statsRes.json();
+    const history = await histRes.json();
+
+    document.getElementById('dkpiTotal').textContent = stats.total_analyses || 0;
+    document.getElementById('dkpiTotalSub').textContent = stats.total_analyses === 0 ? 'No analyses yet' : 'All time';
+    document.getElementById('dkpiColonies').textContent = (stats.total_colonies_counted || 0).toLocaleString();
+    document.getElementById('dkpiContam').textContent = (stats.contamination_rate_pct || 0) + '%';
+    document.getElementById('dkpiContamSub').textContent = stats.total_analyses > 0 ? 'Of all samples' : '—';
+
+    renderHistoryList(history);
+    renderDashChart(history);
+  } catch {
+    document.getElementById('dkpiTotal').textContent = 'Offline';
+  }
+}
+
+function renderHistoryList(history) {
+  const el = document.getElementById('historyList');
+  if (!history.length) {
+    el.innerHTML = '<div class="empty-state">No analyses yet — run one first</div>';
+    return;
+  }
+  const colorMap = { low: 'var(--accent)', med: 'var(--amber)', high: 'var(--red)' };
+  el.innerHTML = history.slice(0, 8).map(a => `
+    <div class="history-item">
+      <div class="history-orb" style="background:radial-gradient(circle,${colorMap[a.risk_level]||'var(--accent)'}33,#080c10)"></div>
+      <div class="history-info">
+        <div class="history-name">${a.filename}</div>
+        <div class="history-meta">${a.colony_count} colonies · ${a.created_at.slice(0,10)}</div>
+      </div>
+      <span class="risk-pill risk-${a.risk_level}" style="font-size:10px">● ${(a.risk_level||'').toUpperCase()}</span>
+    </div>
+  `).join('');
+}
+
+function renderDashChart(history) {
+  const chart = document.getElementById('dashChart');
+  if (!history.length) {
+    chart.innerHTML = '<div class="empty-state" style="flex:1">Run analyses to see your chart</div>';
+    return;
+  }
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const counts = new Array(7).fill(0);
+  const now = new Date();
+  history.forEach(a => {
+    const d = new Date(a.created_at);
+    const diff = Math.floor((now - d) / 86400000);
+    if (diff < 7) counts[6 - diff]++;
+  });
+  const mx = Math.max(...counts, 1);
+  chart.innerHTML = counts.map((v, i) => `
+    <div class="chart-col">
+      <div class="chart-bar${v===0?' dim':''}" style="height:${Math.max(4,v/mx*120)}px"></div>
+      <div class="chart-lbl">${days[(new Date().getDay()+1+i)%7]}</div>
+    </div>
+  `).join('');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+}
+</script>
+</body>
+</html>
